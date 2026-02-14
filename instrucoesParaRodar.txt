@@ -31,3 +31,11 @@ const port = process.env.PORT || 3000
 
 No package.json gerado, há um script chamado "serve" que inicia o servidor de desenvolvimento. Por convenção, o Vue CLI usa serve.
 
+PARA COLABORADORES QUE JA TEM O PROJETO CORRETO:
+-frontend: 
+cd frontend 
+npm run dev 
+
+
+-backend:
+cd backendnpm run dev
