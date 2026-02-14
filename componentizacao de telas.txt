@@ -1,0 +1,23 @@
+TELAS
+1-Cadastrar.vue (componente de cadastro)
+2-Logar.vue (componente para login)
+3-Home.vue (componente principal da tela de home que chamará (importa e usa)componentes abaixo:)
+ *home aparecera a listagem de passaens areas ou maritmicas, depenendo do que usuario escolher, então:
+ -PassagensAereas.vue (home teria um botao que chama esse componente onde é listadas as passagens)
+ -PassagensMaritmicas.vue (home teria um botao que chama esse componente onde é listadas as passagens)
+ -UserMenu.vue (tela com as informacoes da conta)
+ -carrinhoarrinho.vue (side bar de carrinho, para onde irão as passagens adicionadas)
+3- carrinho (ira ter um botao de efeutar pagamento, que chamara o seguinte componente:)
+  -pagamento.vue (onde mostrará as informações do metodo de pagamento e integrará com a api de pagamento)
+
+**diferença entre view e components:
+views:
+    -são componentes que representam paginas competas
+    -estão associadas a rotas (por ex: / para home, /login, /cadastro)
+    -organizam estrutura da pagina e podem conter varios componentes menores
+
+components:
+    -facilita reutilizacao de codigo(podem ser usados em varias views/components)
+    -maior organizacao
+    -setores da aplicação
+    
