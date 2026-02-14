@@ -3,9 +3,9 @@
 </template>
 
 <script>
-vue
+
 </script>
 
 <style>
-css
+
 </style>
