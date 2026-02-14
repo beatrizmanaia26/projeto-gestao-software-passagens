@@ -1,4 +1,4 @@
-# projeto-gest-o-engenharia-de-software
+# projeto-gestao-software-passagens
 
 link para  monday: https://rafaelaaltheman2005s-team.monday.com/boards/18399129454
 
