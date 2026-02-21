@@ -4,6 +4,8 @@ link para  monday: https://rafaelaaltheman2005s-team.monday.com/boards/183991294
 
 linkscrum poker: https://planningpokeronline.com/08pP4V7D6Gxs9nN2pe18/
 
+trello: https://trello.com/b/dFKQKmqk/projeto-de-gestao-de-software
+
 no txt:
 
 -instrucoesParaRodar: encontramos o passo a passo para rodar localmente esse projeto
@@ -11,3 +13,4 @@ no txt:
 -componentizacao de telas: encontramos a explicacao sobre a componentizacao de telas um fluxo genérico da aplicacao 
 
 -conceitos base do vue: explico um pouco sobre como usar as propriedades do vue
+
