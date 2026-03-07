@@ -1,22 +1,29 @@
-// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const app = express();
-const port = process.env.PORT || 3000;
+const usersRoutes = require('./src/routes/usersRoutes');
+const tripsRoutes = require('./src/routes/tripsRoutes');
+const cartRoutes = require('./src/routes/cartRoutes');
+const ordersRoutes = require('./src/routes/ordersRoutes');
+const paymentsRoutes = require('./src/routes/paymentsRoutes');
 
-// Middlewares
+const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Rota de teste
-app.get('/api', (req, res) => {
-  res.json({ mensagem: 'Backend está funcionando!' });
+app.use('/users', usersRoutes);
+app.use('/trips', tripsRoutes);
+app.use('/cart', cartRoutes);
+app.use('/orders', ordersRoutes);
+app.use('/payments', paymentsRoutes);
+
+app.get('/', (req, res) => {
+  res.json({ message: 'API rodando com Supabase' });
 });
 
-// Iniciar o servidor
-app.listen(port, () => {
-  console.log(` Servidor rodando em http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
-//chamar funcoes do config e coisas do mongo
