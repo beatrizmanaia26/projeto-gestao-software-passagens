@@ -33,7 +33,7 @@ function irLogin() {
         e encontre sempre o melhor preço para a sua próxima viagem.
       </p>
 
-      <button class="search-button">
+      <button class="search-button" @click="buscarPassagens">
         Buscar passagens
       </button>
     </main>
