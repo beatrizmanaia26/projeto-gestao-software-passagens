@@ -30,7 +30,7 @@
           />
         </div>
 
-        <button type="submit" class="login-button">
+        <button type="submit" class="login-button" >
           Entrar
         </button>
 
@@ -54,20 +54,24 @@ const router = useRouter()
 
 const email = ref('')
 const senha = ref('')
-
 function logar() {
-  const usuario = {
-    email: email.value,
-    senha: senha.value
+
+  const usuarioSalvo = JSON.parse(localStorage.getItem("usuario"))
+
+  if(!usuarioSalvo){
+    alert("Nenhum usuário cadastrado")
+    return
   }
 
-  console.log('Tentativa de login:', usuario)
+  if(email.value === usuarioSalvo.email && senha.value === usuarioSalvo.senha){
 
-  // Aqui você pode chamar sua API para autenticação
-  alert('Login realizado com sucesso!')
+    alert("Login realizado com sucesso!")
 
-  // Exemplo: redirecionar para Home
-  router.push('/')
+    router.push('/')
+
+  } else {
+    alert("Email ou senha incorretos")
+  }
 }
 
 function irCadastro() {

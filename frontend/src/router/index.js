@@ -3,11 +3,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Logar.vue'
 import Cadastro from '../views/Cadastrar.vue'
+import UserMenu from '../components/usuario/UserMenu.vue'
 //só defini para esse pois os demais aparecerão entro de home 
 const routes = [
   { path: '/', component: Home },
   { path: '/login', component: Login },
-  { path: '/cadastro', component: Cadastro }
+  { path: '/cadastro', component: Cadastro },
+   { path: '/usuario', component: UserMenu }
 ]
 const router = createRouter({
   history: createWebHistory(),
