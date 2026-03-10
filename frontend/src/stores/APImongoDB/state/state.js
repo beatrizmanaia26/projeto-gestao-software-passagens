@@ -4,4 +4,8 @@ export const defaultState = () => ({
   //xxx: '',
   //yyy: null,
   //...
+  name: '',
+  email:'', 
+  password: '', 
+  cpf: '' 
 });

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors = require('cors');
 
@@ -20,10 +20,25 @@ app.use('/orders', ordersRoutes);
 app.use('/payments', paymentsRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'API rodando com Supabase' });
+  res.json({ message: 'Backend funcionando' });
 });
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+});
+
+const supabase = require('./src/models/supabaseClient');
+
+app.get('/teste-users', async (req, res) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, cpf');
+
+  if (error) {
+    return res.status(400).json(error);
+  }
+
+  res.json(data);
 });
