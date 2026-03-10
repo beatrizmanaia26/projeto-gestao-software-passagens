@@ -30,7 +30,7 @@
           />
         </div>
 
-        <button type="submit" class="login-button" >
+        <button type="submit" class="login-button" @click="irHome">
           Entrar
         </button>
 
@@ -54,20 +54,24 @@ const router = useRouter()
 
 const email = ref('')
 const senha = ref('')
+function irHome() {
+  router.push('/home')
+}
 function logar() {
 
   const usuarioSalvo = JSON.parse(localStorage.getItem("usuario"))
 
   if(!usuarioSalvo){
     alert("Nenhum usuário cadastrado")
+    router.push({name:"home"}) //TIRAR QUANDO CADASTRO ESTIVER CORRETO E AFINS ;DDDDDDD
     return
   }
 
   if(email.value === usuarioSalvo.email && senha.value === usuarioSalvo.senha){
 
     alert("Login realizado com sucesso!")
+    router.push('/home')
 
-    router.push('/')
 
   } else {
     alert("Email ou senha incorretos")

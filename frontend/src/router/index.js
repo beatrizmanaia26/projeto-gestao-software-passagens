@@ -6,7 +6,7 @@ import Cadastro from '../views/Cadastrar.vue'
 import UserMenu from '../components/usuario/UserMenu.vue'
 //só defini para esse pois os demais aparecerão entro de home 
 const routes = [
-  { path: '/', component: Home },
+  { path: '/home', component: Home },
   { path: '/login', component: Login },
   { path: '/cadastro', component: Cadastro },
    { path: '/usuario', component: UserMenu }
