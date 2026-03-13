@@ -57,7 +57,7 @@
 
       <p class="login-link">
         Já possui conta?
-        <a href="#">Entrar</a>
+        <a @click.prevent="irLogin" href="#">Entrar</a>
       </p>
 
     </main>
@@ -66,6 +66,8 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router"
+
 export default {
   data() {
     return {
@@ -76,8 +78,12 @@ export default {
     }
   },
   methods: {
-    cadastrar() {
 
+    irLogin() {
+      this.$router.push('/login')
+    },
+
+    cadastrar() {
       const usuario = {
         nome: this.nome,
         email: this.email,
@@ -94,7 +100,9 @@ export default {
 </script>
 
 <style>
-
+h2{
+  color: black;
+}
 .container{
   min-height:100vh;
   display:flex;
