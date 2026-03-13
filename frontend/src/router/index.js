@@ -1,21 +1,42 @@
-//defino rotas para cada componente (tela) ex /cadastrar /logar e depois importo no MediaDeviceInfo.js
+// //defino rotas para cada componente (tela) ex /cadastrar /logar e depois importo no MediaDeviceInfo.js
+// import { createRouter, createWebHistory } from 'vue-router'
+// import Home from '../views/Home.vue'
+// import Login from '../views/Logar.vue'
+// import Cadastro from '../views/Cadastrar.vue'
+// import UserMenu from '../components/usuario/UserMenu.vue'
+// //só defini para esse pois os demais aparecerão entro de home 
+// const routes = [
+//   { path: '/home', component: Home },
+//   { path: '/login', component: Login },
+//   { path: '/cadastro', component: Cadastro },
+//    { path: '/usuario', component: UserMenu }
+// ]
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes
+// })
+// //createRouter é a função do Vue Router que cria o objeto de rotas.
+// //createWebHistory é o modo de histórico que usa URLs limpas 
+
+// export default router
+
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Logar.vue'
 import Cadastro from '../views/Cadastrar.vue'
 import UserMenu from '../components/usuario/UserMenu.vue'
-//só defini para esse pois os demais aparecerão entro de home 
+
 const routes = [
+  { path: '/', redirect: '/login' },
   { path: '/home', component: Home },
   { path: '/login', component: Login },
   { path: '/cadastro', component: Cadastro },
-   { path: '/usuario', component: UserMenu }
+  { path: '/usuario', component: UserMenu }
 ]
+
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
-//createRouter é a função do Vue Router que cria o objeto de rotas.
-//createWebHistory é o modo de histórico que usa URLs limpas 
 
 export default router

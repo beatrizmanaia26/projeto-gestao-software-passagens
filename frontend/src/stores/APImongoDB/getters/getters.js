@@ -1,3 +1,12 @@
-export default{
-    //é as propriedades dos daods que quero acessar, fica as funcoes que derivam do StaticRange, como quero mexer com os dados, ou apenas retorna-los na Tela,Servem para filtrar, contar ou transformar dados antes de exibi-los nos componentes. 
+export default {
+  user: state => state.user,
+  trips: state => state.trips,
+  trip: state => state.trip,
+  seats: state => state.seats,
+  cabins: state => state.cabins,
+  cart: state => state.cart,
+  orders: state => state.orders,
+  payments: state => state.payments,
+  loading: state => state.loading,
+  error: state => state.error
 }

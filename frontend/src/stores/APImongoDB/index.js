@@ -1,14 +1,12 @@
-import defaultState from './state';
-import actions from './actions';
-import getters from './getters';
-import mutations from './mutations';
+import state from './state/state'
+import mutations from './mutations/mutations'
+import actions from './actions/actions'
+import getters from './getters/getters'
 
-const state = defaultState()
-
-export default{
-    namespaced: true, //escopo local, outros modulos podem usar os mesmos nomes (actions,getters..)  
-    state,
-    mutations,
-    actions,
-    getters,
-};
+export default {
+  namespaced: true,
+  state,
+  mutations,
+  actions,
+  getters
+}
