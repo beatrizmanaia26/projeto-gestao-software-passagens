@@ -9,9 +9,12 @@ obs: para criar esses pakcge.json eu rodei dentro de frontend: rode npm create v
 -renomeie os .ts para .js
 -apague todos os tsconfig
 -atualize o repositorio com os codigos templates
+
 para frontend:
+
 cd frontend
 npm install
+npm install vuex@next
 npm install axios
 npm run dev (determinado no packge.json) -->(vue geralmente inicial em http://localhost:8080 (se 8080 não estiver ocupada))
 

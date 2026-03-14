@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Cria uma instância do axios com configurações padrão
 const http = axios.create({
-  baseURL: 'http://localhost:3000/api', // URL base do seu backend
+  baseURL: 'http://localhost:3000', // URL base do seu backend
   timeout: 10000, // tempo máximo de espera (opcional)
   headers: { 'Content-Type': 'application/json' }
 })
