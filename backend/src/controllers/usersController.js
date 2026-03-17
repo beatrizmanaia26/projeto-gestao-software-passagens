@@ -27,8 +27,18 @@ async function getById(req, res) {
   }
 }
 
+async function update(req, res) {
+  try {
+    const data = await usersService.updateUser(req.params.id, req.body);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
 module.exports = {
   register,
   login,
-  getById
+  getById,
+  update
 };
