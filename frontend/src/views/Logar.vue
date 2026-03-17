@@ -30,8 +30,8 @@
           />
         </div>
 
-        <button type="submit" class="login-button" @click="irHome">
-          Entrar
+        <button type="submit" class="login-button" :disabled="loading">
+          {{ loading ? 'Entrando...' : 'Entrar' }}
         </button>
 
       </form>
@@ -46,36 +46,46 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 
 const router = useRouter()
+const store = useStore()
 
 const email = ref('')
 const senha = ref('')
-function irHome() {
-  router.push('/home')
-}
-function logar() {
+const loading = ref(false)
 
-  const usuarioSalvo = JSON.parse(localStorage.getItem("usuario"))
-
-  if(!usuarioSalvo){
-    alert("Nenhum usuário cadastrado")
-    router.push({name:"home"}) //TIRAR QUANDO CADASTRO ESTIVER CORRETO E AFINS ;DDDDDDD
+async function logar() {
+  if (!email.value || !senha.value) {
+    alert('Por favor, preencha todos os campos')
     return
   }
 
-  if(email.value === usuarioSalvo.email && senha.value === usuarioSalvo.senha){
+  loading.value = true
 
-    alert("Login realizado com sucesso!")
+  try {
+    // Fazer login usando a store Vuex
+    await store.dispatch('users/login', {
+      email: email.value,
+      password: senha.value
+    })
+
+    alert('Login realizado com sucesso!')
     router.push('/home')
 
-
-  } else {
-    alert("Email ou senha incorretos")
+  } catch (error) {
+    console.error('Erro no login:', error)
+    alert('Email ou senha incorretos')
+  } finally {
+    loading.value = false
   }
+}
+
+function irHome() {
+  router.push('/home')
 }
 
 function irCadastro() {
