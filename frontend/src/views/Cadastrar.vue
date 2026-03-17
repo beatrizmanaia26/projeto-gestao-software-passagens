@@ -49,8 +49,8 @@
           />
         </div>
 
-        <button type="submit" class="register-button">
-          Cadastrar
+        <button type="submit" class="register-button" :disabled="loading">
+          {{ loading ? 'Cadastrando...' : 'Cadastrar' }}
         </button>
 
       </form>
@@ -65,36 +65,61 @@
   </div>
 </template>
 
-<script>
-import { useRouter } from "vue-router"
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 
-export default {
-  data() {
-    return {
-      nome: "",
-      email: "",
-      cpf: "",
-      senha: ""
-    }
-  },
-  methods: {
+const router = useRouter()
+const store = useStore()
 
-    irLogin() {
-      this.$router.push('/login')
-    },
+const nome = ref('')
+const email = ref('')
+const cpf = ref('')
+const senha = ref('')
+const loading = ref(false)
 
-    cadastrar() {
-      const usuario = {
-        nome: this.nome,
-        email: this.email,
-        cpf: this.cpf,
-        senha: this.senha
-      }
+function irLogin() {
+  router.push('/login')
+}
 
-      console.log("Dados do cadastro:", usuario)
+async function cadastrar() {
+  // Validações básicas
+  if (!nome.value || !email.value || !cpf.value || !senha.value) {
+    alert('Por favor, preencha todos os campos')
+    return
+  }
 
-      alert("Cadastro realizado com sucesso!")
-    }
+  if (senha.value.length < 6) {
+    alert('A senha deve ter pelo menos 6 caracteres')
+    return
+  }
+
+  loading.value = true
+
+  try {
+    // Cadastrar usuário usando a store Vuex
+    await store.dispatch('users/register', {
+      name: nome.value,
+      email: email.value,
+      cpf: cpf.value,
+      password: senha.value
+    })
+
+    alert('Cadastro realizado com sucesso! Você já está logado.')
+
+    // Redirecionar para a home após cadastro
+    router.push('/home')
+
+  } catch (error) {
+    console.error('Erro no cadastro:', error)
+
+    // Mensagem de erro mais específica
+    const errorMsg = error.response?.data?.error || 'Erro ao cadastrar. Tente novamente.'
+    alert(errorMsg)
+
+  } finally {
+    loading.value = false
   }
 }
 </script>
