@@ -1,12 +1,13 @@
 <template>
   <div class="passagens-container">
-    <header class="navbar">
-      <div class="logo">-Horas</div>
+  <header class="navbar">
+      <div class="logo" @click="irHome">-Horas</div>
 
       <div class="usuario" @click="irUsuario">
         Usuario
       </div>
     </header>
+
     <h2>Passagens Marítimas 🚢</h2>
 
     <div v-if="loading" class="mensagem">
@@ -26,6 +27,7 @@
         v-for="passagem in passagens"
         :key="passagem.id"
         class="card-passagem"
+        @click="selecionada = selecionada?.id === passagem.id ? null : passagem"
       >
         <div class="card-rota">
           <span class="cidade">{{ passagem.origin }}</span>
@@ -36,6 +38,21 @@
         <div class="card-preco">
           R$ {{ Number(passagem.price).toFixed(2) }}
         </div>
+
+        <!-- DETALHES — aparecem ao clicar -->
+        <div v-if="selecionada?.id === passagem.id" class="card-detalhes">
+          <div class="detalhe">
+            <span class="detalhe-label">Embarque</span>
+            <span>{{ formatarData(passagem.departure_time) }}</span>
+            <span>{{ formatarHora(passagem.departure_time) }}</span>
+          </div>
+          <div class="detalhe">
+            <span class="detalhe-label">Desembarque</span>
+            <span>{{ formatarData(passagem.arrival_time) }}</span>
+            <span>{{ formatarHora(passagem.arrival_time) }}</span>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -43,19 +60,32 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
 function irUsuario() {
   router.push('/usuario')
 }
+function irHome(){
+  router.push('/home')
+}
 const store = useStore()
+const selecionada = ref(null)
 
 const loading = computed(() => store.state.trips.loading)
 const error = computed(() => store.state.trips.error)
 const passagens = computed(() => store.getters['trips/maritimeTrips'])
+
+function formatarData(datetime) {
+  return new Date(datetime).toLocaleDateString('pt-BR')
+}
+
+function formatarHora(datetime) {
+  return new Date(datetime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+}
 
 onMounted(async () => {
   await store.dispatch('trips/fetchTrips')
@@ -66,7 +96,7 @@ onMounted(async () => {
 .passagens-container {
   min-height: 100vh;
   background: black;
-  color: white; 
+  color: white;
   padding: 70px 40px 40px;
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
@@ -83,12 +113,12 @@ onMounted(async () => {
 .logo{
   font-size:22px;
   font-weight:bold;
+  cursor: pointer;
 }
 .usuario{
   cursor:pointer;
   font-weight:bold;
 }
-
 h2 {
   font-size: 20px;
   margin-bottom: 24px;
@@ -124,6 +154,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  cursor: pointer;
   transition: border-color 0.2s;
 }
 
@@ -147,5 +178,25 @@ h2 {
   font-size: 22px;
   font-weight: bold;
   color: #22c55e;
+}
+
+.card-detalhes {
+  display: flex;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+  font-size: 14px;
+}
+
+.detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detalhe-label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
 }
 </style>
