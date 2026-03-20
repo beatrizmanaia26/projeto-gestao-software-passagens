@@ -9,10 +9,12 @@ function irUsuario() {
 
 function passagensAereas() {
   console.log("Buscar passagens aéreas")
+  router.push('/aereas')
 }
 
 function passagensMaritimas() {
   console.log("Buscar passagens marítimas")
+  router.push('/maritimas')
 }
 </script>
 
@@ -53,15 +55,22 @@ function passagensMaritimas() {
   display:flex;
   flex-direction:column;
   font-family:Arial, Helvetica, sans-serif;
+  
 }
 
 /* NAVBAR */
 
 .navbar{
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: black;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:20px 40px;
+  padding:35px 10px 10px;
   border-bottom:1px solid #333;
 }
 

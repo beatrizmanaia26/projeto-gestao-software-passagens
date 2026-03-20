@@ -8,8 +8,8 @@ export default {
   filters: (state) => state.filters,
 
   // Filtrar viagens por tipo
-  aerialTrips: (state) => state.trips.filter(trip => trip.type === 'aerea'),
-  maritimeTrips: (state) => state.trips.filter(trip => trip.type === 'maritima'),
+  aerialTrips: (state) => state.trips.filter(trip => trip.type === 'air'),
+  maritimeTrips: (state) => state.trips.filter(trip => trip.type === 'sea'),
 
   // Assentos disponíveis
   availableSeats: (state) => state.seats.filter(seat => seat.available),

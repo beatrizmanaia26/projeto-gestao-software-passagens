@@ -24,8 +24,18 @@ async function findUserById(id) {
     .maybeSingle();
 }
 
+async function updateUser(id, userData) {
+  return await supabase
+    .from('users')
+    .update(userData)
+    .eq('id', id)
+    .select('id, name, email, cpf')
+    .single();
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
-  findUserById
+  findUserById,
+  updateUser
 };

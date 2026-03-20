@@ -4,12 +4,16 @@ import Home from '../views/Home.vue'
 import Login from '../views/Logar.vue'
 import Cadastro from '../views/Cadastrar.vue'
 import UserMenu from '../components/usuario/UserMenu.vue'
+import PassagensAereas from '../components/passagens/PassagensAereas.vue'
+import PassagensMaritimas from '../components/passagens/PassagensMaritmicas.vue'
 //só defini para esse pois os demais aparecerão entro de home 
 const routes = [
   { path: '/home', component: Home },
   { path: '/login', component: Login },
   { path: '/cadastro', component: Cadastro },
-   { path: '/usuario', component: UserMenu }
+  { path: '/usuario', component: UserMenu },
+  {path: '/aereas',component: PassagensAereas},
+  {path: '/maritimas',component: PassagensMaritimas}
 ]
 const router = createRouter({
   history: createWebHistory(),

@@ -7,6 +7,14 @@
         Cadastre-se e encontre as passagens mais baratas entre todas as companhias.
       </p>
 
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+
       <form @submit.prevent="cadastrar">
 
         <div class="input-group">
@@ -78,20 +86,26 @@ const email = ref('')
 const cpf = ref('')
 const senha = ref('')
 const loading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
 
 function irLogin() {
   router.push('/login')
 }
 
 async function cadastrar() {
+  // Limpar mensagens anteriores
+  errorMessage.value = ''
+  successMessage.value = ''
+
   // Validações básicas
   if (!nome.value || !email.value || !cpf.value || !senha.value) {
-    alert('Por favor, preencha todos os campos')
+    errorMessage.value = 'Por favor, preencha todos os campos'
     return
   }
 
   if (senha.value.length < 6) {
-    alert('A senha deve ter pelo menos 6 caracteres')
+    errorMessage.value = 'A senha deve ter pelo menos 6 caracteres'
     return
   }
 
@@ -106,17 +120,18 @@ async function cadastrar() {
       password: senha.value
     })
 
-    alert('Cadastro realizado com sucesso! Você já está logado.')
+    successMessage.value = 'Cadastro realizado com sucesso! Redirecionando...'
 
-    // Redirecionar para a home após cadastro
-    router.push('/home')
+    // Redirecionar para a home após 1.5 segundos
+    setTimeout(() => {
+      router.push('/home')
+    }, 1500)
 
   } catch (error) {
     console.error('Erro no cadastro:', error)
 
     // Mensagem de erro mais específica
-    const errorMsg = error.response?.data?.error || 'Erro ao cadastrar. Tente novamente.'
-    alert(errorMsg)
+    errorMessage.value = error.response?.data?.error || 'Erro ao cadastrar. Tente novamente.'
 
   } finally {
     loading.value = false
@@ -163,6 +178,29 @@ h2{
   margin-bottom:20px;
 }
 
+/* Mensagens de erro e sucesso */
+.error-message {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
 .input-group{
   display:flex;
   flex-direction:column;
@@ -195,6 +233,11 @@ h2{
   background:#2563eb;
 }
 
+.register-button:disabled{
+  background:#94a3b8;
+  cursor:not-allowed;
+}
+
 .login-link{
   margin-top:15px;
   font-size:14px;
@@ -205,6 +248,11 @@ h2{
 .login-link a{
   color:#3b82f6;
   text-decoration:none;
+  cursor:pointer;
+}
+
+.login-link a:hover{
+  text-decoration:underline;
 }
 
 </style>
