@@ -14,3 +14,14 @@ no txt:
 
 -conceitos base do vue: explico um pouco sobre como usar as propriedades do vue
 
+-------
+
+# -Horas
+
+Sistema para gerenciamento de passagens chamado –Horas, pois os usuários gastarão menos horas fazendo a compra e busca de passagens. 
+
+# Objetivo do Projeto
+
+Desenvolver site para venda de passagens marítimas e aéreas muito mais intuitivo, rápido e fácil para o consumidor do que os demais disponíveis no mercado.
+
+<img width="1608" height="615" alt="image" src="https://github.com/user-attachments/assets/3f9f9b57-f47d-424a-895e-cb8c1607e4c7" />
