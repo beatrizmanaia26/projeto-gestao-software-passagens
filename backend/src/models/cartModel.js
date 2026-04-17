@@ -36,6 +36,14 @@ async function getCartItems(cartId) {
     .eq('cart_id', cartId);
 }
 
+async function getCartItemById(itemId) {
+  return await supabase
+    .from('cart_items')
+    .select('*')
+    .eq('id', itemId)
+    .single();
+}
+
 async function deleteCartItem(itemId) {
   return await supabase
     .from('cart_items')
@@ -55,6 +63,7 @@ module.exports = {
   createCart,
   addCartItem,
   getCartItems,
+  getCartItemById,
   deleteCartItem,
   clearCart
 };

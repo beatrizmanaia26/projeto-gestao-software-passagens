@@ -21,7 +21,7 @@ async function getOrCreateCart(userId) {
   return newCart.data;
 }
 
-async function addItemToCart({ userId, tripId, seatId, cabinId }) {
+async function validateTrip(tripId) {
   const tripResult = await tripsModel.getTripById(tripId);
 
   if (tripResult.error) {
@@ -32,7 +32,53 @@ async function addItemToCart({ userId, tripId, seatId, cabinId }) {
     throw new Error('Viagem não encontrada');
   }
 
-  const trip = tripResult.data;
+  return tripResult.data;
+}
+
+async function validateSeat(seatId) {
+  if (!seatId) return;
+
+  const seatResult = await tripsModel.getSeatById(seatId);
+
+  if (seatResult.error) {
+    throw new Error(seatResult.error.message);
+  }
+
+  if (!seatResult.data || !seatResult.data.available) {
+    throw new Error('Assento indisponível');
+  }
+}
+
+async function validateCabin(cabinId) {
+  if (!cabinId) return;
+
+  const cabinResult = await tripsModel.getCabinById(cabinId);
+
+  if (cabinResult.error) {
+    throw new Error(cabinResult.error.message);
+  }
+
+  if (!cabinResult.data || !cabinResult.data.available) {
+    throw new Error('Cabine indisponível');
+  }
+}
+
+async function updateAvailability(seatId, cabinId, available) {
+  if (seatId) {
+    await tripsModel.setSeatAvailability(seatId, available);
+  }
+
+  if (cabinId) {
+    await tripsModel.setCabinAvailability(cabinId, available);
+  }
+}
+
+async function addItemToCart({ userId, tripId, seatId, cabinId }) {
+  console.log('=== CART SERVICE - ADD ITEM ===');
+  console.log('Input:', { userId, tripId, seatId, cabinId });
+  
+  const trip = await validateTrip(tripId);
+  console.log('Trip validated:', trip);
 
   if (trip.type === 'air' && !seatId) {
     throw new Error('Para viagem aérea, informe o seatId');
@@ -42,31 +88,14 @@ async function addItemToCart({ userId, tripId, seatId, cabinId }) {
     throw new Error('Para viagem marítima, informe o cabinId');
   }
 
-  if (seatId) {
-    const seatResult = await tripsModel.getSeatById(seatId);
-
-    if (seatResult.error) {
-      throw new Error(seatResult.error.message);
-    }
-
-    if (!seatResult.data || !seatResult.data.available) {
-      throw new Error('Assento indisponível');
-    }
-  }
-
-  if (cabinId) {
-    const cabinResult = await tripsModel.getCabinById(cabinId);
-
-    if (cabinResult.error) {
-      throw new Error(cabinResult.error.message);
-    }
-
-    if (!cabinResult.data || !cabinResult.data.available) {
-      throw new Error('Cabine indisponível');
-    }
-  }
+  await validateSeat(seatId);
+  console.log('Seat validated');
+  
+  await validateCabin(cabinId);
+  console.log('Cabin validated (if applicable)');
 
   const cart = await getOrCreateCart(userId);
+  console.log('Cart obtained:', cart);
 
   const result = await cartModel.addCartItem({
     cart_id: cart.id,
@@ -76,8 +105,14 @@ async function addItemToCart({ userId, tripId, seatId, cabinId }) {
   });
 
   if (result.error) {
+    console.error('Error adding cart item:', result.error);
     throw new Error(result.error.message);
   }
+
+  console.log('Cart item added:', result.data);
+
+  await updateAvailability(seatId, cabinId, false);
+  console.log('Availability updated');
 
   return result.data;
 }
@@ -98,13 +133,27 @@ async function getCartByUserId(userId) {
 }
 
 async function removeCartItem(itemId) {
+  const itemResult = await cartModel.getCartItemById(itemId);
+  
+  if (itemResult.error) {
+    throw new Error(itemResult.error.message);
+  }
+
+  const item = itemResult.data;
+
+  if (!item) {
+    throw new Error('Item não encontrado no carrinho');
+  }
+
   const result = await cartModel.deleteCartItem(itemId);
 
   if (result.error) {
     throw new Error(result.error.message);
   }
 
-  return { message: 'Item removido com sucesso' };
+  await updateAvailability(item.seat_id, item.cabin_id, true);
+
+  return { message: 'Item removido com sucesso', itemId };
 }
 
 module.exports = {

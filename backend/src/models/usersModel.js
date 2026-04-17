@@ -16,6 +16,14 @@ async function findUserByEmail(email) {
     .maybeSingle();
 }
 
+async function findUserByCPF(cpf) {
+  return await supabase
+    .from('users')
+    .select('*')
+    .eq('cpf', cpf)
+    .maybeSingle();
+}
+
 async function findUserById(id) {
   return await supabase
     .from('users')
@@ -36,6 +44,7 @@ async function updateUser(id, userData) {
 module.exports = {
   createUser,
   findUserByEmail,
+  findUserByCPF,
   findUserById,
   updateUser
 };

@@ -5,6 +5,7 @@ async function registerUser({ name, email, password, cpf }) {
     throw new Error('Preencha todos os campos');
   }
 
+  // Verificar se o email já existe
   const existingUser = await usersModel.findUserByEmail(email);
 
   if (existingUser.error) {
@@ -13,6 +14,17 @@ async function registerUser({ name, email, password, cpf }) {
 
   if (existingUser.data) {
     throw new Error('Email já cadastrado');
+  }
+
+  // Verificar se o CPF já existe
+  const existingCPF = await usersModel.findUserByCPF(cpf);
+
+  if (existingCPF.error) {
+    throw new Error(existingCPF.error.message);
+  }
+
+  if (existingCPF.data) {
+    throw new Error('CPF já cadastrado');
   }
 
   // Salva a senha como texto simples (SEM hash)
