@@ -5,6 +5,9 @@ import store from './stores'
 import App from './App.vue'
 import router from './router'
 
+// Importar estilos globais
+import './assets/global.css'
+
 const app = createApp(App)
 
 app.use(store)
