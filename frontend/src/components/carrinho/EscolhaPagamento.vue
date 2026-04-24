@@ -15,6 +15,10 @@ function irUsuario() {
   router.push('/usuario')
 }
 
+function voltar() {
+  router.push('/usuario')
+}
+
 function irHome() {
   router.push('/')
 }
@@ -53,6 +57,10 @@ function irHome() {
         </svg>
         PIX
       </button>
+
+      <button class="voltar" @click="voltar">
+          Voltar
+        </button>
     </main>
 
   </div>
@@ -191,5 +199,18 @@ h2{
 
 .botao:active{
   transform: translateY(-1px);
+}
+
+.voltar{
+  margin-top: 5px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.voltar:hover{
+  color: white;
 }
 </style>
