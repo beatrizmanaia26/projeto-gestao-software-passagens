@@ -6,6 +6,7 @@ import Login from '../views/Logar.vue'
 import Cadastro from '../views/Cadastrar.vue'
 import Carrinho from '../views/Carrinho.vue'
 import UserMenu from '../components/usuario/UserMenu.vue'
+import EscolhaPagamento from '../components/carrinho/EscolhaPagamento.vue'
 import PassagensAereas from '../components/passagens/PassagensAereas.vue'
 import PassagensMaritimas from '../components/passagens/PassagensMaritmicas.vue'
 //só defini para esse pois os demais aparecerão entro de home
@@ -17,7 +18,8 @@ const routes = [
   { path: '/carrinho', component: Carrinho },
   { path: '/usuario', component: UserMenu },
   {path: '/aereas',component: PassagensAereas},
-  {path: '/maritimas',component: PassagensMaritimas}
+  {path: '/maritimas',component: PassagensMaritimas},
+  {path: '/pagamento',component: EscolhaPagamento}
 ]
 const router = createRouter({
   history: createWebHistory(),
