@@ -2,11 +2,19 @@
   <div class="user-area-container">
     <div class="user-area-content">
 
+      <div class="top-actions">
+        <button class="btn-back" @click="voltarTelaAnterior" title="Voltar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+      </div>
+
       <!-- Header -->
       <div class="user-header">
         <div class="user-avatar">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
           </svg>
         </div>
         <h1 class="user-title">Área do Cliente</h1>
@@ -92,7 +100,7 @@
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
             <p>Você ainda não possui passagens compradas</p>
-            <button class="btn-primary" @click="$router.push('/')">Comprar Passagens</button>
+            <button class="btn-primary" @click="router.push('/home')">Comprar Passagens</button>
           </div>
 
           <div v-else class="tickets-list">
@@ -234,6 +242,15 @@ const saveChanges = async () => {
   }
 }
 
+const voltarTelaAnterior = () => {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  router.push('/home')
+}
+
 // Buscar dados quando o componente for montado
 onMounted(async () => {
   try {
@@ -244,7 +261,7 @@ onMounted(async () => {
       await store.dispatch('orders/fetchUserOrders')
     } else {
       console.warn('Usuário não autenticado')
-      router.push('/logar')
+      router.push('/login')
     }
   } catch (error) {
     console.error('Erro ao carregar dados do usuário:', error)
@@ -253,11 +270,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Container Principal */
 .user-area-container {
   min-height: 100vh;
-  background: black;
-  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  padding: 2rem 1rem 3rem;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .user-area-content {
@@ -265,113 +282,55 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-/* Header */
+.top-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.btn-back:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 14px 32px rgba(102, 126, 234, 0.45);
+}
+
+.btn-back svg {
+  width: 24px;
+  height: 24px;
+}
+
 .user-header {
   text-align: center;
   color: white;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
 }
 
 .user-avatar {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   margin: 0 auto 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
-/* Header com botão de editar */
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-edit {
-  background: #667eea;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  border-radius: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-left: auto;
-}
-
-.btn-edit:hover {
-  background: #5568d3;
-  transform: scale(1.1);
-}
-
-.btn-edit svg {
-  width: 20px;
-  height: 20px;
-  color: white;
-}
-
-/* Input de edição */
-.info-input {
-  font-size: 1.1rem;
-  color: #333;
-  padding: 1rem;
-  background: white;
-  border: 2px solid #667eea;
-  border-radius: 10px;
-  outline: none;
-  transition: border-color 0.3s ease;
-}
-
-.info-input:focus {
-  border-color: #5568d3;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Botões de ação de edição */
-.edit-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #f0f0f0;
-}
-
-.btn-cancel,
-.btn-save {
-  flex: 1;
-  padding: 1rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-cancel {
-  background: #f0f0f0;
-  color: #666;
-}
-
-.btn-cancel:hover {
-  background: #e0e0e0;
-}
-
-.btn-save {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-}
-
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+  box-shadow: 0 18px 50px rgba(102, 126, 234, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .user-avatar svg {
@@ -384,30 +343,34 @@ onMounted(async () => {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .user-subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.78);
   margin: 0;
 }
 
-/* Loading State */
+.loading-state,
+.info-card,
+.tickets-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+}
+
 .loading-state {
-  background: white;
-  border-radius: 20px;
   padding: 4rem 2rem;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .spinner {
   width: 50px;
   height: 50px;
   margin: 0 auto 1rem;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #0ea5e9;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -418,30 +381,25 @@ onMounted(async () => {
 }
 
 .loading-state p {
-  color: #666;
-  font-size: 1.1rem;
+  color: #475569;
+  font-size: 1.05rem;
 }
 
-/* Sections */
 .user-sections {
   display: grid;
   gap: 2rem;
 }
 
-/* Cards */
 .info-card,
 .tickets-card {
-  background: white;
-  border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .info-card:hover,
 .tickets-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.28);
 }
 
 .card-header {
@@ -450,26 +408,57 @@ onMounted(async () => {
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .card-header svg {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   color: #667eea;
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: #333;
-  font-weight: 600;
+  color: #0f172a;
+  font-weight: 700;
 }
 
-/* Info Grid */
+.btn-edit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-left: auto;
+  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.25);
+}
+
+.btn-edit:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 28px rgba(102, 126, 234, 0.35);
+}
+
+.btn-edit svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
 .info-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .info-item {
@@ -479,120 +468,173 @@ onMounted(async () => {
 }
 
 .info-item label {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: #667eea;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+}
+
+.info-value,
+.info-input {
+  font-size: 1.05rem;
+  color: #1e293b;
+  padding: 1rem 1.1rem;
+  background: #f8fafc;
+  border-radius: 14px;
+  border: 1px solid #e9d5ff;
 }
 
 .info-value {
-  font-size: 1.1rem;
-  color: #333;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 10px;
   border-left: 4px solid #667eea;
 }
 
-/* Empty State */
+.info-input {
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-cancel,
+.btn-save,
+.btn-primary {
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.btn-cancel,
+.btn-save {
+  flex: 1;
+  padding: 1rem;
+}
+
+.btn-cancel {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.btn-cancel:hover {
+  filter: brightness(0.98);
+}
+
+.btn-save,
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.28);
+}
+
+.btn-save:hover,
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(102, 126, 234, 0.35);
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
-  color: #666;
+  color: #64748b;
 }
 
 .empty-state svg {
   width: 80px;
   height: 80px;
-  color: #ddd;
+  color: #94a3b8;
   margin-bottom: 1rem;
 }
 
 .empty-state p {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   margin-bottom: 1.5rem;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
   padding: 1rem 2rem;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-}
-
-/* Tickets List */
 .tickets-list {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .ticket-item {
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-radius: 15px;
+  border-radius: 18px;
   padding: 1.5rem;
-  border: 2px solid #f0f0f0;
-  transition: all 0.3s ease;
+  border: 1px solid #ede9fe;
+  transition: all 0.25s ease;
 }
 
 .ticket-item:hover {
   border-color: #667eea;
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.12);
 }
 
-/* Route Display */
 .ticket-route {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px dashed #e0e0e0;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed #d8b4fe;
 }
 
 .route-point {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex: 1;
 }
 
 .route-label {
   font-size: 0.75rem;
-  color: #999;
+  color: #64748b;
   text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .route-city {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #333;
+  color: #0f172a;
 }
 
 .route-arrow {
   flex-shrink: 0;
   margin: 0 1rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.22);
 }
 
 .route-arrow svg {
-  width: 32px;
-  height: 32px;
-  color: #667eea;
+  width: 22px;
+  height: 22px;
+  color: white;
 }
 
-/* Ticket Details */
 .ticket-details {
   display: flex;
   flex-wrap: wrap;
@@ -604,12 +646,13 @@ onMounted(async () => {
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
   background: white;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: #666;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #475569;
 }
 
 .detail-item svg {
@@ -621,23 +664,39 @@ onMounted(async () => {
 .detail-item.price {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  border: none;
+  padding: 0.85rem 1.35rem;
+  box-shadow: 0 12px 26px rgba(102, 126, 234, 0.24);
 }
 
 .price-value {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
+  .user-area-container {
+    padding: 1.25rem 0.9rem 2rem;
+  }
+
   .user-title {
     font-size: 2rem;
   }
 
   .user-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .info-card,
+  .tickets-card,
+  .loading-state {
+    padding: 1.4rem;
+  }
+
+  .card-header {
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .ticket-route {
@@ -647,7 +706,7 @@ onMounted(async () => {
 
   .route-arrow {
     transform: rotate(90deg);
-    margin: 0.5rem 0;
+    margin: 0.25rem 0;
   }
 
   .route-point {
@@ -655,7 +714,8 @@ onMounted(async () => {
     text-align: center;
   }
 
-  .ticket-details {
+  .ticket-details,
+  .edit-actions {
     flex-direction: column;
     align-items: stretch;
   }
