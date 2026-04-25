@@ -9,6 +9,7 @@ import UserMenu from '../components/usuario/UserMenu.vue'
 import EscolhaPagamento from '../components/carrinho/EscolhaPagamento.vue'
 import PassagensAereas from '../components/passagens/PassagensAereas.vue'
 import PassagensMaritimas from '../components/passagens/PassagensMaritmicas.vue'
+import SucessoPagamento from '../components/carrinho/SucessoPagamento.vue'
 //só defini para esse pois os demais aparecerão entro de home
 const routes = [
   { path: '/', component: Landing },
@@ -19,7 +20,8 @@ const routes = [
   { path: '/usuario', component: UserMenu },
   {path: '/aereas',component: PassagensAereas},
   {path: '/maritimas',component: PassagensMaritimas},
-  {path: '/pagamento',component: EscolhaPagamento}
+  {path: '/pagamento',component: EscolhaPagamento},
+  {path: '/sucessoPagamento',component: SucessoPagamento},
 ]
 const router = createRouter({
   history: createWebHistory(),
