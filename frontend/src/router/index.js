@@ -10,6 +10,8 @@ import EscolhaPagamento from '../components/carrinho/EscolhaPagamento.vue'
 import PassagensAereas from '../components/passagens/PassagensAereas.vue'
 import PassagensMaritimas from '../components/passagens/PassagensMaritmicas.vue'
 import SucessoPagamento from '../components/carrinho/SucessoPagamento.vue'
+import CartaoCredito from '../components/carrinho/CartaoCredito.vue'
+
 //só defini para esse pois os demais aparecerão entro de home
 const routes = [
   { path: '/', component: Landing },
@@ -22,6 +24,7 @@ const routes = [
   {path: '/maritimas',component: PassagensMaritimas},
   {path: '/pagamento',component: EscolhaPagamento},
   {path: '/sucessoPagamento',component: SucessoPagamento},
+  {path: '/pagamento/cartao',component: CartaoCredito},
 ]
 const router = createRouter({
   history: createWebHistory(),
