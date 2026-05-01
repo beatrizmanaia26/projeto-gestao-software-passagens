@@ -227,10 +227,26 @@ function confirmarCompra() {
     return
   }
 
-  // Redirecionar para página de pagamento
+  const selectedItemIds = itensSelecionados.value.map(item => item.id)
+  const userId = store.getters['users/userId']
+
+  if (!userId) {
+    mostrarToast('Usuário não identificado. Faça login novamente.', 'error')
+    router.push('/login')
+    return
+  }
+
   mostrarToast('Redirecionando para pagamento...', 'success')
+
   setTimeout(() => {
-    router.push('/pagamento')
+    router.push({
+      path: '/pagamento',
+      query: {
+        total: totalSelecionado.value,
+        items: selectedItemIds.join(','),
+        userId: userId
+      }
+    })
   }, 1000)
 }
 

@@ -129,6 +129,18 @@
                   <span>{{ passagem.data }}</span>
                 </div>
 
+                <div class="detail-item">
+                  <span>{{ passagem.tipo }}</span>
+                </div>
+
+                <div v-if="passagem.assento" class="detail-item">
+                  <span>Assento: {{ passagem.assento }}</span>
+                </div>
+
+                <div v-if="passagem.cabine" class="detail-item">
+                  <span>Cabine: {{ passagem.cabine }}</span>
+                </div>
+
                 <div class="detail-item price">
                   <span class="price-value">R$ {{ passagem.valor?.toFixed(2) || '0.00' }}</span>
                 </div>
@@ -156,19 +168,64 @@ const nome = computed(() => store.getters['users/userName'])
 const email = computed(() => store.getters['users/userEmail'])
 const cpf = computed(() => store.state.users.currentUser?.cpf || '')
 
-// Buscar pedidos do usuário
-const orders = computed(() => store.state.orders.orders)
-const loading = computed(() => store.state.users.loading || store.state.orders.loading)
+// Loading da tela
+const loading = ref(false)
 
-// Formatar passagens para exibição
-const passagens = computed(() => {
-  return orders.value.map(order => ({
-    origem: order.origin || 'N/A',
-    destino: order.destination || 'N/A',
-    data: order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'N/A',
-    valor: order.total_amount
-  }))
-})
+// Lista de passagens compradas
+const passagens = ref([])
+
+async function buscarPassagensCompradas() {
+  try {
+    const userId = store.getters['users/userId']
+
+    if (!userId) {
+      console.warn('Usuário não autenticado')
+      router.push('/login')
+      return
+    }
+
+    const response = await fetch(`http://localhost:3000/orders/user/${userId}`)
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw data
+    }
+
+    console.log('Pedidos comprados:', data)
+
+    const passagensFormatadas = []
+
+    data.forEach((order) => {
+      const itens = order.order_items || []
+
+      itens.forEach((item) => {
+        passagensFormatadas.push({
+          pedidoId: order.id,
+          origem: item.trips?.origin || 'N/A',
+          destino: item.trips?.destination || 'N/A',
+          tipo: item.trips?.type === 'air' ? 'Aérea' : 'Marítima',
+          data: `Pedido #${order.id}`,
+          valor: Number(item.unit_price || 0),
+          assento: item.trip_seats
+            ? `${item.trip_seats.seat_number} - ${item.trip_seats.class}`
+            : null,
+          cabine: item.trip_cabins
+            ? `${item.trip_cabins.cabin_number} - ${item.trip_cabins.cabin_type}`
+            : null,
+          status: order.status,
+          pagamento: order.payments?.[0]?.payment_status || 'N/A'
+        })
+      })
+    })
+
+    passagens.value = passagensFormatadas
+
+  } catch (error) {
+    console.error('Erro ao buscar passagens compradas:', error)
+    passagens.value = []
+  }
+}
 
 // Função para formatar CPF
 const formatCPF = (cpf) => {
@@ -254,17 +311,22 @@ const voltarTelaAnterior = () => {
 // Buscar dados quando o componente for montado
 onMounted(async () => {
   try {
+    loading.value = true
+
     const userId = store.getters['users/userId']
 
     if (userId) {
       await store.dispatch('users/fetchUserById', userId)
-      await store.dispatch('orders/fetchUserOrders')
+      await buscarPassagensCompradas()
     } else {
       console.warn('Usuário não autenticado')
       router.push('/login')
     }
+
   } catch (error) {
     console.error('Erro ao carregar dados do usuário:', error)
+  } finally {
+    loading.value = false
   }
 })
 </script>

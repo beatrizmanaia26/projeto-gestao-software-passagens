@@ -1,14 +1,33 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
+
+const valor = Number(route.query.total) || 0
+const items = String(route.query.items || '')
+const userId = String(route.query.userId || '')
 
 function irParaCartao() {
-  router.push('/pagamento/cartao')
+  router.push({
+    path: '/pagamento/cartao',
+    query: {
+      total: valor,
+      items: items,
+      userId: userId
+    }
+  })
 }
 
 function irParaPix() {
-  router.push('/pagamento/pix')
+  router.push({
+    path: '/pagamento/pix',
+    query: {
+      total: valor,
+      items: items,
+      userId: userId
+    }
+  })
 }
 
 function irUsuario() {

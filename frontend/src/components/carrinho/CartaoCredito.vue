@@ -1,73 +1,173 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from 'vuex'
 
 const router = useRouter()
+const route = useRoute()
+const store = useStore()
 
-const numero = ref('')
-const nome = ref('')
-const validade = ref('')
-const cvv = ref('')
+const valor = Number(route.query.total) || 0
+
+const cartItemIds = String(route.query.items || '')
+  .split(',')
+  .filter(Boolean)
+  .map(Number)
+
+function getUserId() {
+  return (
+    store.getters['users/userId'] ||
+    store.state.users.currentUser?.id ||
+    String(route.query.userId || '')
+  )
+}
 
 function voltar() {
   router.push('/pagamento')
-}
-
-function irUsuario() {
-  router.push('/usuario')
 }
 
 function irHome() {
   router.push('/')
 }
 
-function pagar() {
-  if (!numero.value || !nome.value || !validade.value || !cvv.value) {
-    alert('Preencha todos os campos')
-    return
+const renderCardPaymentBrick = async (bricksBuilder: any) => {
+  const settings = {
+    initialization: {
+      amount: valor,
+    },
+
+    callbacks: {
+      onReady: () => {
+        console.log('Brick pronto')
+      },
+
+      onSubmit: (formData: any, additionalData: any) => {
+        return new Promise((resolve, reject) => {
+          const userId = getUserId()
+
+          console.log('User ID antes de enviar:', userId)
+          console.log('Cart items antes de enviar:', cartItemIds)
+
+          if (!userId) {
+            alert('Usuário não identificado. Faça login novamente.')
+            router.push('/login')
+            reject('userId não encontrado')
+            return
+          }
+
+          if (!cartItemIds.length) {
+            alert('Nenhum item do carrinho foi enviado para pagamento.')
+            reject('cartItemIds vazio')
+            return
+          }
+
+          const body = {
+            userId,
+            cartItemIds,
+            formData,
+            additionalData
+          }
+
+          console.log('Dados enviados para o backend:', body)
+
+          fetch('http://localhost:3000/process_order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          })
+            .then(async (res) => {
+              const data = await res.json()
+
+              if (!res.ok) {
+                throw data
+              }
+
+              return data
+            })
+            .then((res) => {
+              console.log('Resposta do pagamento:', res)
+
+              if (res.success) {
+                alert('Pagamento aprovado! Suas passagens foram compradas.')
+                router.push('/usuario')
+                resolve(res)
+              } else {
+                alert(res.message || 'Pagamento não aprovado.')
+                reject(res)
+              }
+            })
+            .catch((err) => {
+              console.error('Erro no pagamento:', err)
+              alert(err?.error || err?.message || 'Erro ao processar pagamento')
+              reject(err)
+            })
+        })
+      },
+
+      onError: (error: any) => {
+        console.error('Erro no Brick:', error)
+      },
+    },
   }
 
-  alert('Pagamento realizado com sucesso!')
+  // @ts-ignore
+  window.cardPaymentBrickController = await bricksBuilder.create(
+    'cardPayment',
+    'cardPaymentBrick_container',
+    settings
+  )
 }
+
+onMounted(() => {
+  // Use sua PUBLIC KEY de teste aqui.
+  // @ts-ignore
+  const mp = new window.MercadoPago('APP_USR-42ba0617-ac83-4101-b277-5b8b4552793d', {
+    locale: 'pt-BR',
+  })
+
+  const bricksBuilder = mp.bricks()
+
+  renderCardPaymentBrick(bricksBuilder)
+})
+
+onBeforeUnmount(() => {
+  // @ts-ignore
+  if (window.cardPaymentBrickController) {
+    // @ts-ignore
+    window.cardPaymentBrickController.unmount()
+  }
+})
 </script>
 
 <template>
   <div class="pagamento">
 
-    <!-- NAVBAR -->
-    <header class="navbar">
-      <div class="logo" @click="irHome">-Horas</div>
-    </header>
-
     <!-- CONTEÚDO -->
     <main class="conteudo">
-
       <h2>Pagamento com Cartão</h2>
 
-      <div class="formulario">
-        <input v-model="numero" type="text" placeholder="Número do cartão" />
-        <input v-model="nome" type="text" placeholder="Nome no cartão" />
 
-        <div class="linha">
-          <input v-model="validade" type="text" placeholder="Validade (MM/AA)" />
-          <input v-model="cvv" type="text" placeholder="CVV" />
-        </div>
+    <div class="valor">
+      Total: R$ {{ valor }}
+    </div>
 
-        <button class="botao" @click="pagar">
-          Finalizar Pagamento
-        </button>
+      <!-- Aqui o Brick vai aparecer -->
+      <div id="cardPaymentBrick_container"></div>
 
-        <button class="voltar" @click="voltar">
-          Voltar
-        </button>
-      </div>
-
+      <button class="voltar" @click="voltar">
+        Voltar
+      </button>
     </main>
 
   </div>
 </template>
 
 <style scoped>
+h2{
+  color: white;
+}
 .pagamento{
   min-height:100vh;
   background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
@@ -77,60 +177,22 @@ function pagar() {
   font-family:Arial, Helvetica, sans-serif;
 }
 
-/* NAVBAR */
-
 .navbar{
-  position: relative;
-  z-index: 100;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding: 20px 40px;
-  border-bottom:1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .logo{
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
   cursor: pointer;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: 2px;
-  transition: 0.3s;
 }
-
-.logo:hover{
-  transform: scale(1.05);
-  filter: brightness(1.2);
-}
-
-.nav-icons{
-  display: flex;
-  align-items: center;
-}
-
-.usuario{
-  cursor: pointer;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: 0.3s;
-}
-
-.usuario:hover{
-  background: rgba(102, 126, 234, 0.2);
-  border-color: rgba(102, 126, 234, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-/* CONTEÚDO */
 
 .conteudo{
   flex:1;
@@ -139,98 +201,26 @@ function pagar() {
   justify-content:center;
   align-items:center;
   gap: 30px;
-  padding: 40px;
 }
-
-h2{
-  font-size: 22px;
-  color: rgba(255,255,255,0.9);
-}
-
-/* FORM */
-
-.formulario{
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  width: 100%;
-  max-width: 400px;
-}
-
-input{
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  color: white;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-input:focus{
-  outline: none;
-  border-color: rgba(102,126,234,0.7);
-  background: rgba(102,126,234,0.05);
-  box-shadow: 0 0 10px rgba(102,126,234,0.3);
-}
-
-.linha{
-  display:flex;
-  gap: 10px;
-}
-
-/* BOTÃO PRINCIPAL */
-
-.botao{
-  margin-top: 10px;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.botao::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.botao:hover::before {
-  left: 100%;
-}
-
-.botao:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}
-
-/* BOTÃO VOLTAR */
 
 .voltar{
-  margin-top: 5px;
+  margin-top: 20px;
   background: transparent;
   border: none;
   color: rgba(255,255,255,0.6);
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .voltar:hover{
   color: white;
+}
+
+.valor {
+  font-size: 20px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 </style>
