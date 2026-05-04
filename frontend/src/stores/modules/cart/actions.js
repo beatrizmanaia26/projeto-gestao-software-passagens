@@ -10,7 +10,7 @@ export default {
         throw new Error('Usuário não autenticado')
       }
       const response = await cartAPI.getCart(userId)
-      commit('SET_ITEMS', response.data)
+      commit('SET_ITEMS', response.data.items)
       return response.data
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Erro ao buscar carrinho'
