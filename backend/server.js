@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 const client = new MercadoPagoConfig({
-  accessToken: 'APP_USR-786415814028835-042719-42944073ad46f6299c0e57bc3a2738d2-3357360729'
+  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
 const paymentClient = new Payment(client);
@@ -31,13 +31,20 @@ app.post('/process_order', async (req, res) => {
   let createdOrderId = null;
 
   try {
-    const { userId, cartItemIds, formData, additionalData } = req.body;
+    const { userId, cartItemIds, formData, additionalData, paymentMethod } = req.body;
 
     console.log('userId:', userId);
     console.log('cartItemIds:', cartItemIds);
     console.log('formData:', formData);
     console.log('additionalData:', additionalData);
 
+    const isPix =
+      paymentMethod === 'pix' ||
+      formData?.payment_method_id === 'pix';
+
+    // =========================
+    // VALIDAÇÕES
+    // =========================
     if (!userId) {
       return res.status(400).json({
         success: false,
@@ -59,6 +66,9 @@ app.post('/process_order', async (req, res) => {
       });
     }
 
+    // =========================
+    // BUSCAR ITENS DO CARRINHO
+    // =========================
     const { data: cartItems, error: cartError } = await supabase
       .from('cart_items')
       .select(`
@@ -80,22 +90,21 @@ app.post('/process_order', async (req, res) => {
       .in('id', cartItemIds)
       .eq('carts.user_id', userId);
 
-    if (cartError) {
-      console.error('Erro ao buscar itens do carrinho:', cartError);
-      throw cartError;
-    }
+    if (cartError) throw cartError;
 
     if (!cartItems || cartItems.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Nenhum item do carrinho encontrado para esse usuário'
+        error: 'Nenhum item do carrinho encontrado'
       });
     }
 
+    // =========================
+    // CALCULAR TOTAL
+    // =========================
     const totalAmountNumber = cartItems.reduce((total, item) => {
       const price = Number(item.trips?.price || 0);
       const quantity = Number(item.quantity || 1);
-
       return total + price * quantity;
     }, 0);
 
@@ -108,8 +117,11 @@ app.post('/process_order', async (req, res) => {
 
     const totalAmount = totalAmountNumber.toFixed(2);
 
-    console.log('Total calculado pelo banco:', totalAmount);
+    console.log('Total:', totalAmount);
 
+    // =========================
+    // CRIAR PEDIDO
+    // =========================
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -120,15 +132,13 @@ app.post('/process_order', async (req, res) => {
       .select()
       .single();
 
-    if (orderError) {
-      console.error('Erro ao criar pedido:', orderError);
-      throw orderError;
-    }
+    if (orderError) throw orderError;
 
     createdOrderId = order.id;
 
-    console.log('Pedido criado no banco:', order);
-
+    // =========================
+    // CRIAR ITENS DO PEDIDO
+    // =========================
     const orderItemsPayload = cartItems.map((item) => ({
       order_id: order.id,
       trip_id: item.trip_id,
@@ -141,44 +151,77 @@ app.post('/process_order', async (req, res) => {
       .from('order_items')
       .insert(orderItemsPayload);
 
-    if (orderItemsError) {
-      console.error('Erro ao criar itens do pedido:', orderItemsError);
-      throw orderItemsError;
+    if (orderItemsError) throw orderItemsError;
+
+    // =========================
+    // MONTAR BODY MERCADO PAGO
+    // =========================
+    let mercadoPagoOrderBody;
+
+    if (isPix) {
+      // ===== PIX =====
+      mercadoPagoOrderBody = {
+        type: 'online',
+        processing_mode: 'automatic',
+        total_amount: totalAmount,
+        external_reference: String(order.id),
+
+        payer: {
+          email: formData.email || formData.payer?.email
+        },
+
+        transactions: {
+          payments: [
+            {
+              amount: totalAmount,
+              payment_method: {
+                id: 'pix',
+                type: 'bank_transfer'
+              }
+            }
+          ]
+        }
+      };
+
+    } else {
+      // ===== CARTÃO =====
+      const paymentType =
+        additionalData?.paymentTypeId ||
+        formData.payment_type_id ||
+        'credit_card';
+
+      mercadoPagoOrderBody = {
+        type: 'online',
+        processing_mode: 'automatic',
+        total_amount: totalAmount,
+        external_reference: String(order.id),
+
+        payer: {
+          email: formData.payer.email,
+          identification: formData.payer.identification
+        },
+
+        transactions: {
+          payments: [
+            {
+              amount: totalAmount,
+              payment_method: {
+                id: formData.payment_method_id,
+                type: paymentType,
+                token: formData.token,
+                installments: Number(formData.installments)
+              }
+            }
+          ]
+        }
+      };
     }
 
-    console.log('Itens do pedido criados:', orderItemsPayload);
+    console.log('Enviando para MP:', mercadoPagoOrderBody);
 
-    const paymentType =
-      additionalData?.paymentTypeId ||
-      formData.payment_type_id ||
-      'credit_card';
-
-    const mercadoPagoOrderBody = {
-      type: 'online',
-      processing_mode: 'automatic',
-      total_amount: totalAmount,
-      external_reference: String(order.id),
-      payer: {
-        email: formData.payer.email,
-        identification: formData.payer.identification
-      },
-      transactions: {
-        payments: [
-          {
-            amount: totalAmount,
-            payment_method: {
-              id: formData.payment_method_id,
-              type: paymentType,
-              token: formData.token,
-              installments: Number(formData.installments)
-            }
-          }
-        ]
-      }
-    };
-
-    console.log('Enviando order para Mercado Pago:', mercadoPagoOrderBody);
-
+    // =========================
+    // ENVIAR PARA MERCADO PAGO
+    // =========================
     const idempotencyKey = crypto.randomUUID();
 
     const mpResponse = await fetch('https://api.mercadopago.com/v1/orders', {
@@ -193,24 +236,17 @@ app.post('/process_order', async (req, res) => {
 
     const mpOrder = await mpResponse.json();
 
-    console.log('Status HTTP Mercado Pago:', mpResponse.status);
-    console.log('Resposta Mercado Pago Orders API:', JSON.stringify(mpOrder, null, 2));
-    console.log('Erros Mercado Pago:', JSON.stringify(mpOrder.errors, null, 2));
-
+    console.log('MP RESPONSE:', JSON.stringify(mpOrder, null, 2));
 
     if (!mpResponse.ok) {
-      console.error('Erro Mercado Pago Orders API:', mpOrder);
-
       await supabase
         .from('orders')
-        .update({
-          status: 'payment_error'
-        })
+        .update({ status: 'payment_error' })
         .eq('id', order.id);
 
       return res.status(400).json({
         success: false,
-        error: 'Erro ao enviar pagamento para o Mercado Pago',
+        error: 'Erro no Mercado Pago',
         detalhe: mpOrder
       });
     }
@@ -218,96 +254,87 @@ app.post('/process_order', async (req, res) => {
     const mpPayment = mpOrder.transactions?.payments?.[0];
 
     const paymentStatus = mpPayment?.status || mpOrder.status;
-    const paymentStatusDetail = mpPayment?.status_detail || mpOrder.status_detail;
-    const mercadoPagoPaymentId = mpPayment?.id || null;
-    const mercadoPagoOrderId = mpOrder.id;
+    const paymentStatusDetail = mpPayment?.status_detail;
 
-    const { error: paymentInsertError } = await supabase
-      .from('payments')
-      .insert({
+    // =========================
+    // SALVAR PAGAMENTO
+    // =========================
+    await supabase.from('payments').insert({
+      order_id: order.id,
+      payment_method: isPix ? 'pix' : formData.payment_method_id,
+      payment_status: paymentStatus,
+      transaction_id: String(mpPayment?.id || mpOrder.id)
+    });
+
+    // =========================
+    // FLUXO PIX
+    // =========================
+
+    if (isPix) {
+      const pixData = mpPayment?.payment_method;
+      return res.status(200).json({
+        success: true,
+        message: 'PIX gerado com sucesso',
         order_id: order.id,
-        payment_method: formData.payment_method_id,
-        payment_status: paymentStatus,
-        transaction_id: String(mercadoPagoPaymentId || mercadoPagoOrderId)
+        mercado_pago_order_id: mpOrder.id,
+        ticket_url: pixData?.ticket_url,
+        qr_code: pixData?.qr_code,
+        qr_code_base64: pixData?.qr_code_base64
       });
-
-    if (paymentInsertError) {
-      console.error('Erro ao salvar pagamento no banco:', paymentInsertError);
-      throw paymentInsertError;
     }
 
+    // =========================
+    // FLUXO CARTÃO
+    // =========================
     const isApproved =
       mpOrder.status === 'processed' &&
       paymentStatus === 'processed' &&
       paymentStatusDetail === 'accredited';
 
     if (isApproved) {
-      const { error: updateOrderError } = await supabase
+      await supabase
         .from('orders')
-        .update({
-          status: 'approved'
-        })
+        .update({ status: 'approved' })
         .eq('id', order.id);
 
-      if (updateOrderError) {
-        console.error('Erro ao aprovar pedido:', updateOrderError);
-        throw updateOrderError;
-      }
-
-      const { error: deleteCartError } = await supabase
+      await supabase
         .from('cart_items')
         .delete()
         .in('id', cartItemIds);
 
-      if (deleteCartError) {
-        console.error('Erro ao limpar carrinho:', deleteCartError);
-        throw deleteCartError;
-      }
-
       return res.status(200).json({
         success: true,
-        message: 'Pagamento aprovado e pedido criado com sucesso',
-        order_id: order.id,
-        mercado_pago_order_id: mercadoPagoOrderId,
-        mercado_pago_payment_id: mercadoPagoPaymentId,
-        payment_status: paymentStatus,
-        payment_status_detail: paymentStatusDetail
+        message: 'Pagamento aprovado',
+        order_id: order.id
       });
     }
 
     await supabase
       .from('orders')
-      .update({
-        status: paymentStatus || mpOrder.status || 'not_approved'
-      })
+      .update({ status: paymentStatus || 'not_approved' })
       .eq('id', order.id);
 
     return res.status(200).json({
       success: false,
-      message: `Pagamento não aprovado. Status: ${paymentStatus}`,
+      message: 'Pagamento não aprovado',
       order_id: order.id,
-      mercado_pago_order_id: mercadoPagoOrderId,
-      mercado_pago_payment_id: mercadoPagoPaymentId,
-      payment_status: paymentStatus,
-      payment_status_detail: paymentStatusDetail
+      payment_status: paymentStatus
     });
 
   } catch (error) {
-    console.error('Erro no /process_order:', error);
+    console.error(error);
 
     if (createdOrderId) {
       await supabase
         .from('orders')
-        .update({
-          status: 'payment_error'
-        })
+        .update({ status: 'payment_error' })
         .eq('id', createdOrderId);
     }
 
     return res.status(500).json({
       success: false,
-      error: 'Erro ao processar pagamento',
-      detalhe: error.message || String(error)
+      error: 'Erro no servidor',
+      detalhe: error.message
     });
   }
 });
