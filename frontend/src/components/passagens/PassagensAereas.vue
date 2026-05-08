@@ -108,6 +108,24 @@
 
     <h2>Passagens Aéreas ✈</h2>
 
+    <div class="filtro-busca">
+      <div class="filtro-campo">
+        <label>Origem</label>
+        <input
+          v-model="filtroOrigem"
+          type="text"
+          placeholder="Ex: São Paulo"
+        />
+      </div>
+      <div class="filtro-campo">
+        <label>Destino</label>
+        <input
+          v-model="filtroDestino"
+          type="text"
+          placeholder="Ex: Rio de Janeiro"
+        />
+      </div>
+    </div>
     <div v-if="loading" class="mensagem">
       Carregando passagens...
     </div>
@@ -187,7 +205,16 @@ const selecionada = ref(null)
 
 const loading = computed(() => store.state.trips.loading)
 const error = computed(() => store.state.trips.error)
-const passagens = computed(() => store.getters['trips/aerialTrips'])
+const passagens = computed(() => {
+  const trips = store.getters['trips/aerialTrips']
+  return trips.filter(p => {
+    const origem = (p.origin || '').toLowerCase()
+    const destino = (p.destination || '').toLowerCase()
+    const buscaOrigem = filtroOrigem.value.toLowerCase()
+    const buscaDestino = filtroDestino.value.toLowerCase()
+    return origem.includes(buscaOrigem) && destino.includes(buscaDestino)
+  })
+})
 const isAuthenticated = computed(() => store.getters['users/isAuthenticated'])
 
 function formatarData(datetime) {
@@ -231,6 +258,8 @@ const carregandoAssentos = ref(false)
 const erroCarregamento = ref('')
 const classeAtiva = ref('Econômica')
 const assentoSelecionado = ref(null)
+const filtroOrigem = ref('')
+const filtroDestino = ref('')
 
 // Classes disponíveis - apenas as que existem no BD para esta passagem
 const classesDisponiveis = computed(() => {
@@ -270,7 +299,7 @@ async function adicionarAoCarrinho(passagem) {
   try {
     console.log('Buscando assentos para trip:', passagem.id)
     const response = await fetch(`http://localhost:3000/trips/${passagem.id}/seats`)
-
+    
     console.log('Response status:', response.status)
     if (!response.ok) {
       const errorData = await response.json()
@@ -378,12 +407,47 @@ onMounted(async () => {
   align-items:center;
   padding:20px 40px;
   border-bottom:1px solid #333;
-
 }
 .logo{
   font-size:22px;
   font-weight:bold;
   cursor: pointer;
+}
+.filtro-busca {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filtro-campo {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-campo label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filtro-campo input {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filtro-campo input:focus {
+  border-color: #0ea5e9;
 }
 
 .nav-icons{
